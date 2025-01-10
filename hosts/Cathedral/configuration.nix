@@ -6,7 +6,7 @@
 
 let
   # Builds packages for manufactured FHS environment. Included below with other normal system level packages
-  fhsEnv = pkgs.buildFHSUserEnv {
+  fhsEnv = pkgs.buildFHSEnv {
     name = "fhs-env";
     targetPkgs = pkgs: [
       
@@ -23,7 +23,8 @@ in
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix 
+      ./hardware-configuration.nix
+      ./systemModules/default.nix
     ];
 
 #######################################
@@ -37,15 +38,44 @@ in
   boot.loader.grub.device = "nodev"; # or "nodev" for efi only
   boot.loader.systemd-boot.enable = true;
 
-  fileSystems."/mnt/data1" = {
-    device = "/dev/sda1";
+fileSystems."/usr/data1" = {
+    device = "/dev/disk/by-uuid/02f908dd-5774-406b-9755-d35893148387";
     fsType = "ext4";
+    autoFormat = true;
+    mountPoint = "/usr/data1";
+
+
     # See FILESYSTEM-INDEPENDENT MOUNT OPTIONS at:
     # https://manpages.ubuntu.com/manpages/noble/en/man8/mount.8.html#filesystem-independent%20mount%20options
     # (I think its just man pages basically)
-    options = [ "async" "auto" "dev" "exec" "noatime" "nofail" "rw" "suid" "user" "u+rwx" "g+rwx" "o+rwx" ];
+    options = [ 
+        "nosuid"
+        "nodev"
+        "nofail"
+        "x-gvfs-show"
+    ];
+
   };
-  
+
+ fileSystems."/usr/data2" = {
+    device = "/dev/disk/by-uuid/8a5a647e-3634-4396-befe-4e4104a24477";
+    fsType = "ext4";
+    autoFormat = true;
+    mountPoint = "/usr/data2";
+
+
+    # See FILESYSTEM-INDEPENDENT MOUNT OPTIONS at:
+    # https://manpages.ubuntu.com/manpages/noble/en/man8/mount.8.html#filesystem-independent%20mount%20options
+    # (I think its just man pages basically)
+    options = [ 
+        "nosuid"
+        "nodev"
+        "nofail"
+        "x-gvfs-show"
+    ];
+
+};
+
 services.devmon.enable = true;
 services.gvfs.enable = true;
 services.udisks2.enable = true;
@@ -80,32 +110,12 @@ services.udisks2.enable = true;
     enable32Bit = true;
   };
 
-  # Enable the X11 windowing system.
-  services.xserver = {
-    enable = true;
-    #desktopManager.cinnamon.enable = true;
-    desktopManager.xfce.enable = true;
-    desktopManager.xfce.enableScreensaver = true;
-    displayManager.lightdm.enable = true;
-    displayManager.sessionCommands = ''
-    xset -dpms
-    xset s noblank
-    xset s off
-    '';
 
 
 
 
-    videoDrivers = [ "nvidia" ];
-
-  };
 
 
-  services.libinput.enable = true; # renamed from services.xserver.libinput.enable = true;
-  #services.displayManager.defaultSession = "cinnamon";
-  #services.cinnamon.apps.enable = true;  
-  services.displayManager.defaultSession = "xfce";
-  services.dbus.enable = true;
 
 
 
@@ -147,7 +157,7 @@ services.udisks2.enable = true;
 
   # Open ports in the firewall.
   networking.firewall= {
-      allowedTCPPorts = [ 22 443 8080 ];
+      allowedTCPPorts = [ 22 443 3389 8080 5001];
       allowedUDPPorts = [  ];
       allowPing = true;
   };
@@ -237,6 +247,8 @@ services.udisks2.enable = true;
     gparted
     steam
     zoom-us
+    unzip
+    fzf
      
     xclip
     lazygit
@@ -305,6 +317,11 @@ services.udisks2.enable = true;
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "23.11"; # Did you read the comment?
   nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    download-buffer-size = 524288000;  # 500 MB
+    cores = 12;
+
+  };
 }
 
