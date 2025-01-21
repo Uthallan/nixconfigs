@@ -27,8 +27,8 @@
 
       homeConfigurations = {
         emillyo = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          #pkgs = import nixpkgs { system = "x86_64-linux"; };
+          #inherit pkgs;
+          pkgs = import nixpkgs { system = "x86_64-linux"; };
           modules = [ ./home.nix ];
         };
       };

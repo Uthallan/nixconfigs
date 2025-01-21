@@ -38,16 +38,15 @@ in
   boot.loader.grub.device = "nodev"; # or "nodev" for efi only
   boot.loader.systemd-boot.enable = true;
 
+
+# See FILESYSTEM-INDEPENDENT MOUNT OPTIONS at:
+# https://manpages.ubuntu.com/manpages/noble/en/man8/mount.8.html#filesystem-independent%20mount%20options
+# (I think its just man pages basically)
 fileSystems."/usr/data1" = {
     device = "/dev/disk/by-uuid/02f908dd-5774-406b-9755-d35893148387";
     fsType = "ext4";
     autoFormat = true;
     mountPoint = "/usr/data1";
-
-
-    # See FILESYSTEM-INDEPENDENT MOUNT OPTIONS at:
-    # https://manpages.ubuntu.com/manpages/noble/en/man8/mount.8.html#filesystem-independent%20mount%20options
-    # (I think its just man pages basically)
     options = [ 
         "nosuid"
         "nodev"
@@ -58,15 +57,24 @@ fileSystems."/usr/data1" = {
   };
 
  fileSystems."/usr/data2" = {
-    device = "/dev/disk/by-uuid/8a5a647e-3634-4396-befe-4e4104a24477";
+    device = "/dev/disk/by-uuid/21371369-4007-4e55-967c-a5956ae934cc";
     fsType = "ext4";
     autoFormat = true;
     mountPoint = "/usr/data2";
+    options = [ 
+        "nosuid"
+        "nodev"
+        "nofail"
+        "x-gvfs-show"
+    ];
 
+};
 
-    # See FILESYSTEM-INDEPENDENT MOUNT OPTIONS at:
-    # https://manpages.ubuntu.com/manpages/noble/en/man8/mount.8.html#filesystem-independent%20mount%20options
-    # (I think its just man pages basically)
+fileSystems."/usr/data3" = {
+    device = "/dev/disk/by-uuid/8a5a647e-3634-4396-befe-4e4104a24477";
+    fsType = "ext4";
+    autoFormat = true;
+    mountPoint = "/usr/data3";
     options = [ 
         "nosuid"
         "nodev"
@@ -157,7 +165,15 @@ services.udisks2.enable = true;
 
   # Open ports in the firewall.
   networking.firewall= {
-      allowedTCPPorts = [ 22 443 3389 8080 5001];
+    allowedTCPPorts = [ 
+      22
+      443
+      3389
+      8080
+      5001
+      8332 # Bitcoin
+
+    ];
       allowedUDPPorts = [  ];
       allowPing = true;
   };
@@ -223,32 +239,23 @@ services.udisks2.enable = true;
   environment.systemPackages = with pkgs; [
     # FHS environment above for programs and libraries that need it
     fhsEnv
-    
-    # graphical libs to help around generally
-    gtk3
-    adwaita-icon-theme
-    qt5.qtbase
-    xapp
-    xdg-desktop-portal-xapp
-    #cinnamon-common
-    #cinnamon-session
-    #cinnamon-desktop
-    #cinnamon-screensaver
-    #cinnamon-control-center
-    #cinnamon-settings-daemon
+    openssh
+    openssl
+    gawk
+    xxd
+
 
 
     wget
-    wezterm
     
     vscodium.fhs
     pika-backup
     bottom
     gparted
     steam
-    zoom-us
     unzip
     fzf
+    systemdgenie
      
     xclip
     lazygit
@@ -256,7 +263,7 @@ services.udisks2.enable = true;
     baobab
 
     # Bitcoin
-    bitcoin # GUI + CLI
+    #bitcoin # GUI + CLI
 
     # Rust
     rustup

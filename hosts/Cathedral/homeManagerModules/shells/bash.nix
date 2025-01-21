@@ -57,7 +57,7 @@
     };
 
     zellij = {
-      enable = true;
+      enable = false;
       enableBashIntegration = true;
       # See https://zellij.dev/old-documentation/options for the full list of options.
       settings = {
