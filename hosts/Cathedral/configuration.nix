@@ -258,7 +258,6 @@ services.udisks2.enable = true;
     systemdgenie
      
     xclip
-    lazygit
     just
     baobab
 
